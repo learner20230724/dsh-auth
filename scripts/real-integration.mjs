@@ -492,7 +492,7 @@ async function waitForBrowser(evaluate, expression, label) {
   }
 }
 
-const AUTHENTICATED_SPA = 'location.pathname === "/" && Array.from(document.querySelectorAll("button")).some(button => { const text = button.textContent?.trim(); return text === "Settings" || text === "设置" })'
+const AUTHENTICATED_SPA = 'location.pathname === "/" && Array.from(document.querySelectorAll("button")).some(button => { const text = button.textContent?.trim(); return text === "Settings" || text === "设置" || text === "More" || text === "更多" })'
 
 async function openHarnessSettings(browser, label) {
   await waitForBrowser(browser.evaluate, AUTHENTICATED_SPA, label)
@@ -504,7 +504,8 @@ async function openHarnessSettings(browser, label) {
     const dismiss = buttons.find(button => ['Continue', '继续', 'Configure later', '稍后配置'].includes(button.textContent?.trim() ?? ''))
     if (dismiss !== undefined) { dismiss.click(); return false }
     const settings = buttons.find(button => ['Settings', '设置'].includes(button.textContent?.trim() ?? ''))
-    settings?.click()
+    if (settings !== undefined) settings.click()
+    else buttons.find(button => ['More', '更多'].includes(button.textContent?.trim() ?? ''))?.click()
     return false
   })()`, `${label} Settings account rows`)
 }
@@ -1079,8 +1080,7 @@ async function main() {
     afterRestartSession.status === 200 && afterRestartIdentity.user?.userId === 'admin',
     'persisted session identity did not survive a DSH restart',
   )
-  const afterRestartSpa = await request(httpsPort, '/', { headers: { cookie: session.pair } })
-  assert(afterRestartSpa.status === 200, 'persisted session did not reach the protected SPA after a DSH restart')
+  await waitUntil(async () => (await request(httpsPort, '/', { headers: { cookie: session.pair } })).status === 200, 'persisted protected SPA after a DSH restart', [{ name: 'DSH', process: dshProcess }])
   const afterRestartGateway = await request(httpsPort, '/auth/session', { headers: { cookie: gatewaySession.pair } })
   const afterRestartGatewayJson = JSON.parse(afterRestartGateway.body.toString('utf8'))
   assert(

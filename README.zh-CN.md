@@ -1,5 +1,7 @@
 # dsh-auth
 
+此本地兼容构建为 DeepSeek Harness 0.2.1 的 Peer 准入接口补充原生认证桥接，保留 Host/Origin 校验、会话吊销和已销毁 Peer 的拒绝行为。基于上游提交 `5426174f0b7f18ab0c7247a65c7f9b87e54881c5`，并非 npm 正式发布版。
+
 [English](README.md) | 简体中文
 
 [![npm version](https://img.shields.io/npm/v/dsh-auth.svg)](https://www.npmjs.com/package/dsh-auth)

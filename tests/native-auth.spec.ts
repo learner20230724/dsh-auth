@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { HostConnectionHandle } from '@deepseek-ai/dsh-client-connection'
+import type { ConnectionTrustRequest, HostConnectionHandle } from '@deepseek-ai/dsh-client-connection'
 import { installNativeAuthBridge } from '../src/native-auth.js'
 
 function fixture(nativeStatus: 401 | 403 | undefined, valid = true) {
@@ -12,6 +12,40 @@ function fixture(nativeStatus: 401 | 403 | undefined, valid = true) {
 }
 
 describe('explicit native operator bridge', () => {
+  it('admits the live browser Peer for 0.2.1 HTTP and socket transports, preserving native denials and revocation', () => {
+    const lifetime = new AbortController()
+    const browserPeer = { signal: lifetime.signal }
+    let accepted = true
+    const nativeAdmission = vi.fn<(request: ConnectionTrustRequest) => { rejection: number } | { peer: unknown }>(() => ({ rejection: 401 }))
+    const connection = {
+      browserPeer,
+      admit: nativeAdmission,
+      requestRejection(request: ConnectionTrustRequest) {
+        const result = this.admit(request)
+        return 'rejection' in result ? result.rejection : undefined
+      },
+      authorizeIndex: vi.fn(() => false),
+    }
+    const dispose = installNativeAuthBridge(connection as unknown as HostConnectionHandle, () => accepted)
+    const request = { headers: { cookie: 'signed-session' } }
+    expect(connection.admit(request)).toEqual({ peer: browserPeer })
+    expect(connection.requestRejection(request)).toBeUndefined()
+    accepted = false
+    expect(connection.admit(request)).toEqual({ rejection: 401 })
+    accepted = true
+    nativeAdmission.mockReturnValue({ rejection: 403 })
+    expect(connection.admit(request)).toEqual({ rejection: 403 })
+    const apiPeer = { id: 'existing-api-peer' }
+    nativeAdmission.mockReturnValue({ peer: apiPeer })
+    expect(connection.admit(request)).toEqual({ peer: apiPeer })
+    nativeAdmission.mockReturnValue({ rejection: 401 })
+    lifetime.abort()
+    expect(connection.admit(request)).toEqual({ rejection: 401 })
+    expect(connection.requestRejection(request)).toBe(401)
+    dispose()
+    expect(connection.admit).toBe(nativeAdmission)
+  })
+
   it.each([{ cookie: 'signed-session' }, new Headers({ Cookie: 'signed-session' })])('accepts a verified session with Node or Fetch headers', headers => {
     const f = fixture(401)
     expect(f.connection.requestRejection({ headers })).toBeUndefined()

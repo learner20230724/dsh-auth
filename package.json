@@ -1,6 +1,6 @@
 {
   "name": "dsh-auth",
-  "version": "0.3.0",
+  "version": "0.3.0-guihualab.1",
   "description": "Caddy-fronted administrator authentication bundle for DeepSeek Harness",
   "type": "module",
   "main": "./lib/index.js",
@@ -197,5 +197,5 @@
     "forward-auth"
   ],
   "license": "MIT",
-  "packageManager": "pnpm@10.14.0"
+  "packageManager": "pnpm@10.34.5"
 }
