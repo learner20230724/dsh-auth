@@ -1,6 +1,6 @@
 # dsh-auth
 
-This local compatibility build extends the native authentication bridge to DeepSeek Harness 0.2.1's Peer admission API, while preserving Host/Origin checks, session revocation, and disposed-Peer rejection. It is based on upstream commit `5426174f0b7f18ab0c7247a65c7f9b87e54881c5` and is not an npm release.
+This local compatibility build supports DeepSeek Harness 0.2.0 and 0.2.1 browser admission, while preserving Host/Origin checks, session revocation, and disposed-Peer rejection. Already signed-in browsers can reopen links from another website through a same-origin entry document. It is based on upstream commit `5426174f0b7f18ab0c7247a65c7f9b87e54881c5` and is not an npm release.
 
 English | [简体中文](README.zh-CN.md)
 

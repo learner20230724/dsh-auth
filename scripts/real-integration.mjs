@@ -17,6 +17,7 @@ import { CompactEncrypt } from 'jose'
 import { renderCaddyfile } from './caddy-config.mjs'
 import { prepareCaddyRelease } from './caddy-release.mjs'
 import { renderCaddyfile as renderInstallerCaddyfile } from '../lib/installer/caddy.js'
+import { proveAuthenticatedBrowserEntry } from './browser-entry-journey.mjs'
 
 const checkout = resolve(import.meta.dirname, '..')
 const HELP = `Usage:
@@ -1129,6 +1130,7 @@ async function main() {
       form.requestSubmit()
       return true
     })()`)
+    await proveAuthenticatedBrowserEntry(browser, httpsPort, waitForBrowser, AUTHENTICATED_SPA)
     await openHarnessSettings(browser, 'Harness authenticated SPA')
     await waitForBrowser(
       browser.evaluate,
@@ -1241,6 +1243,7 @@ async function main() {
     gatewayIdentity: 'signed JWE session reached SPA and survived restart',
     forgedGatewayIdentity: 401,
     browserSettingsSignOut: 'Settings -> Sign out -> /auth/login',
+    browserExistingSessionEntry: 'cross-site links to login and protected SPA',
     browserSettingsPasswordReset: 'Settings -> Reset password',
     browserStaleCsrfRecovery: '403 fresh form then login',
     browserLoginMultiTab: 'shared CSRF cookie',

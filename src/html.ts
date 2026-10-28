@@ -352,6 +352,17 @@ ${extraHead}</head>
 </html>`
 }
 
+/** Commit a same-origin document before an authenticated navigation continues. */
+export function authenticatedEntryPage(target: string, preferences: UiPreferences): string {
+  const copy = COPY[preferences.language]
+  const href = escapeHtml(target)
+  return document(copy.returnToApp, `<section class="content">
+    <h1>${escapeHtml(copy.returnToApp)}</h1>
+    <p class="lede">${escapeHtml(copy.accountLede)}</p>
+    <a class="button" href="${href}">${escapeHtml(copy.returnToApp)}</a>
+  </section>`, preferences, `  <meta http-equiv="refresh" content="0;url=${href}">\n`)
+}
+
 /** Render the standalone accessible login page. */
 export function loginPage(
   basePath: string,

@@ -12,6 +12,22 @@ function fixture(nativeStatus: 401 | 403 | undefined, valid = true) {
 }
 
 describe('explicit native operator bridge', () => {
+  it('preserves 0.2.0 index admission when an operator and admit method also exist', () => {
+    const connection = {
+      operator: {},
+      requestRejection: vi.fn<(request: ConnectionTrustRequest) => 401 | undefined>(() => 401),
+      admit(request: ConnectionTrustRequest) {
+        const rejection = this.requestRejection(request)
+        return rejection === undefined ? { peer: this.operator } : { rejection }
+      },
+      authorizeIndex: vi.fn(() => false),
+    }
+    const handle = connection as unknown as HostConnectionHandle
+    const dispose = installNativeAuthBridge(handle, () => true)
+    expect(handle.authorizeIndex({ headers: {}, method: 'GET', url: '/' }, {} as never)).toBe(true)
+    dispose()
+  })
+
   it('admits the live browser Peer for 0.2.1 HTTP and socket transports, preserving native denials and revocation', () => {
     const lifetime = new AbortController()
     const browserPeer = { signal: lifetime.signal }
@@ -80,5 +96,23 @@ describe('explicit native operator bridge', () => {
     f.dispose()
     expect(Object.getOwnPropertyDescriptor(f.connection, 'requestRejection')?.value).toBe(replacement)
     expect(Object.getOwnPropertyDescriptor(f.connection, 'authorizeIndex')?.value).toBe(f.authorizeIndex)
+  })
+
+  it('marks authenticated cross-site documents for login re-entry without granting native admission', () => {
+    const f = fixture(403)
+    const writeHead = vi.fn()
+    f.authorizeIndex.mockImplementationOnce((...args: unknown[]) => {
+      const response = args[1] as { writeHead(status: number, headers: Record<string, string>): void }
+      response.writeHead(403, { 'cache-control': 'no-store' })
+      return false
+    })
+    const request = {
+      method: 'GET', url: '/workspace',
+      headers: { 'sec-fetch-site': 'cross-site', 'sec-fetch-mode': 'navigate', 'sec-fetch-dest': 'document' },
+    }
+    expect(f.connection.authorizeIndex(request, { writeHead, end: vi.fn() })).toBe(false)
+    expect(writeHead).toHaveBeenCalledWith(403, { 'cache-control': 'no-store', 'x-dsh-auth-login': '/auth/login?returnTo=%2Fworkspace' })
+    expect(f.authorizeIndex).toHaveBeenCalledOnce()
+    expect(f.connection.requestRejection(request)).toBe(403)
   })
 })

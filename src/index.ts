@@ -44,7 +44,7 @@ export function apply(ctx: Context, config: ResolvedConfig): void {
   }), logger)
   if (config.nativeAuthBridge) {
     ctx.inject(['connection'], nativeCtx => {
-      nativeCtx.effect(() => installNativeAuthBridge(nativeCtx.connection, headers => application.isAuthenticated(headers)), 'dsh-auth: native operator bridge')
+      nativeCtx.effect(() => installNativeAuthBridge(nativeCtx.connection, headers => application.isAuthenticated(headers), config.basePath), 'dsh-auth: native operator bridge')
     })
   }
   logger.info({

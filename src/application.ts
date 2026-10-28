@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { handleAdminPasswordChange } from './admin-password.js'
 import { BROWSER_BOOTSTRAP_FILE, browserBootstrapSource } from './browser-bootstrap.js'
+import { continueAuthenticatedNavigation } from './browser-entry.js'
 import type { ResolvedConfig } from './config.js'
 import { authCookie, cookieNames, parseCookies } from './cookies.js'
 import { constantTimeTextEqual, CookieSigner } from './crypto.js'
@@ -210,7 +211,7 @@ export class AuthApplication {
     if (req.method === 'GET') {
       const authenticated = this.sessions.authenticate(req, this.now())
       if (authenticated !== undefined) {
-        redirect(res, returnTo, this.renewalHeaders(authenticated))
+        continueAuthenticatedNavigation(req, res, { basePath: this.config.basePath, returnTo, preferences, headers: this.renewalHeaders(authenticated) })
         return
       }
       this.renderLogin(req, res, 200, returnTo, preferences)
