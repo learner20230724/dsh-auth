@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.3.0-guihualab.2
+
+- Recover authenticated navigation from external links through a same-origin entry document, including links to protected SPA paths.
+- Keep the 0.2.0 operator bridge distinct from 0.2.1 browser Peer admission.
+- Cover existing-session navigation in the disposable DSH, Caddy, and browser journey.
+
 ## v0.3.0
 
 Changes since [v0.2.3](https://github.com/hxy91819/dsh-auth/compare/v0.2.3...v0.3.0).

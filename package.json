@@ -1,6 +1,6 @@
 {
   "name": "dsh-auth",
-  "version": "0.3.0-guihualab.1",
+  "version": "0.3.0-guihualab.2",
   "description": "Caddy-fronted administrator authentication bundle for DeepSeek Harness",
   "type": "module",
   "main": "./lib/index.js",

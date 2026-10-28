@@ -56,7 +56,7 @@ http://{{SITE_HOST}}:{{HTTP_PORT}}, http://:{{HTTP_PORT}} {
 
 		intercept {
 			@auth_denied {
-				status 401
+				status 401 403
 				header X-Dsh-Auth-Login *
 			}
 			handle_response @auth_denied {

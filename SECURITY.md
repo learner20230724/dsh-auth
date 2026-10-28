@@ -73,6 +73,7 @@ Removing or weakening any invariant requires a new security review. Do not compe
 - A login-page GET reuses a still-valid CSRF cookie so separate tabs do not invalidate one another. If a login POST has a stale or invalid CSRF pair, the server keeps the 403 denial, returns a fresh no-store login form, and requires the operator to submit it again; it never replays the submitted password.
 - Protected unsafe methods and browser WebSocket handshakes are checked at the authentication subrequest before Caddy rewrites the upstream Origin expected by Harness.
 - Return targets accept only absolute paths on the current origin. Authentication and account responses use `no-store`; HTML receives a restrictive CSP and framing protections.
+- An authenticated cross-site document navigation re-enters through a no-store same-origin login document. Native Host/Origin denials remain denials; only marked document responses redirect to login. API requests, unsafe methods, and WebSocket handshakes do not use this navigation recovery.
 - Session cookies contain signed opaque random tokens. Authentication also requires a matching server-side session record, allowing logout and administrative secret rotation to revoke sessions.
 
 Authentication secrets are not bearer API tokens and the package does not expose a supported non-browser token-authentication interface.
